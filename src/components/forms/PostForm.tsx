@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -22,7 +21,7 @@ const formSchema = z.object({
     }),
 })
 
-const PostForm = () => {
+const PostForm = ({ post }) => {
     // 1. Define your form.
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -60,7 +59,10 @@ const PostForm = () => {
                         <FormItem>
                             <FormLabel className="shad-form_label">App Photos</FormLabel>
                             <FormControl>
-                                <FileUploader />
+                                <FileUploader
+                                    fieldChange={field.onChange}
+                                    mediaUrl={post?.imageUrl}
+                                />
                             </FormControl>
                             <FormMessage className="shad-form_message" />
                         </FormItem>
@@ -97,8 +99,18 @@ const PostForm = () => {
                     )}
                 />
                 <div className="flex gap-4 items-center justify-end">
-                    <Button type="button" className="shad-button_dark_4">Cancel</Button>
-                    <Button type="submit" className="shad-button_primary whitespace-nowrap">Submit</Button>
+                    <Button
+                        type="button"
+                        className="shad-button_dark_4"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        type="submit"
+                        className="shad-button_primary whitespace-nowrap"
+                    >
+                        Submit
+                    </Button>
                 </div>
                 <Button type="submit">Submit</Button>
             </form>
