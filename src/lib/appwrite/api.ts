@@ -100,3 +100,13 @@ export const getCorrentUser = async () => {
         return null
     }
 }
+
+export const SignOutAccount = async () => {
+    try {
+        const session = await account.deleteSession('current')
+        return session
+    } catch (error) {
+        console.log(error);
+
+    }
+}
