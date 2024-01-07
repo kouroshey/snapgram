@@ -7,16 +7,14 @@ import { Input } from "@/components/ui/input"
 import { useForm } from "react-hook-form"
 import { SignupValidation } from "@/lib/validation"
 import Loader from "@/components/ui/shared/Loader"
-import { Link, Navigate } from "react-router-dom"
-import { createUserAccount } from "@/lib/appwrite/api"
+import { Link } from "react-router-dom"
 import { useCreateUserAccount, useSignInAccount } from "@/lib/react-query/queriesAndMutations"
 import { useUserContext } from "@/context/AuthContext"
 import { useNavigate } from "react-router-dom"
-import { useMutation } from "@tanstack/react-query"
 
 const SignupForm = () => {
     const { toast } = useToast();
-    const { checkAuthUser, isLoading, isUserLoading } = useUserContext();
+    const { checkAuthUser } = useUserContext();
     const navigate = useNavigate()
 
     const {
@@ -24,7 +22,7 @@ const SignupForm = () => {
         isPending: isCreatingAccount
     } = useCreateUserAccount();
 
-    const { mutateAsync: signInAccount, isLoading: isSigningIn } = useSignInAccount();
+    const { mutateAsync: signInAccount } = useSignInAccount();
 
     // 1. Define your form.
     const form = useForm<z.infer<typeof SignupValidation>>({

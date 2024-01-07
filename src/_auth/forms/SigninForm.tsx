@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom"
 
 const SigninForm = () => {
     const { toast } = useToast();
-    const { checkAuthUser, isLoading, isUserLoading } = useUserContext();
+    const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
     const navigate = useNavigate()
 
     const { mutateAsync: signInAccount } = useSignInAccount();
