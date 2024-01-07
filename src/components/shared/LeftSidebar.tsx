@@ -66,7 +66,6 @@ const LeftSidebar = () => {
                                     {link.label}
                                 </NavLink>
                             </li>
-
                         )
                     })}
                 </ul>
