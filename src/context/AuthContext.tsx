@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useState } from 'react'
-import { getCorrentUser } from '@/lib/appwrite/api'
-import { useNavigate } from 'react-router-dom'
-import { IUser } from '@/types';
+import { useNavigate } from "react-router-dom";
+import { createContext, useContext, useEffect, useState } from "react";
+
+import { IUser } from "@/types";
+import { getCurrentUser } from "@/lib/appwrite/api";
 
 export const INITIAL_USER = {
     id: "",
@@ -32,50 +33,51 @@ type IContextType = {
 
 const AuthContext = createContext<IContextType>(INITIAL_STATE);
 
-const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const navigate = useNavigate()
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+    const navigate = useNavigate();
     const [user, setUser] = useState<IUser>(INITIAL_USER);
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const checkAuthUser = async () => {
         setIsLoading(true);
         try {
-            const currenAccount = await getCorrentUser()
-
-            if (currenAccount) {
+            const currentAccount = await getCurrentUser();
+            if (currentAccount) {
                 setUser({
-                    id: currenAccount.$id,
-                    name: currenAccount.name,
-                    username: currenAccount.username,
-                    email: currenAccount.email,
-                    imageUrl: currenAccount.imageUrl,
-                    bio: currenAccount.bio
-                })
+                    id: currentAccount.$id,
+                    name: currentAccount.name,
+                    username: currentAccount.username,
+                    email: currentAccount.email,
+                    imageUrl: currentAccount.imageUrl,
+                    bio: currentAccount.bio,
+                });
+                setIsAuthenticated(true);
 
-                setIsAuthenticated(true)
-                return true
+                return true;
             }
 
-            return false
+            return false;
         } catch (error) {
-            console.log(error);
+            console.error(error);
             return false;
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
     };
 
     useEffect(() => {
         const cookieFallback = localStorage.getItem("cookieFallback");
         if (
-            cookieFallback === "[]"
+            cookieFallback === "[]" ||
+            cookieFallback === null ||
+            cookieFallback === undefined
         ) {
-            navigate('/sign-in')
+            navigate("/sign-in");
         }
 
-        checkAuthUser()
-    }, [])
+        checkAuthUser();
+    }, []);
 
     const value = {
         user,
@@ -86,13 +88,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         checkAuthUser,
     };
 
-    return (
-        <AuthContext.Provider value={value}>
-            {children}
-        </AuthContext.Provider>
-    )
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export default AuthProvider
-
-export const useUserContext = () => useContext(AuthContext)
+export const useUserContext = () => useContext(AuthContext);
