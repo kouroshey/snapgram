@@ -1,9 +1,10 @@
 import { ID } from 'appwrite'
-import { INewPost, INewUser } from "@/types";
+import { INewPost, INewUser, IUpdatePost } from "@/types";
 import { account, appwriteConfig, avatars, databases, storage } from './config';
 import { URL } from 'url';
 import { Query } from 'appwrite';
 import { QUERY_KEYS } from '../react-query/queryKeys';
+import { FileDiffIcon } from 'lucide-react';
 
 export async function createUserAccount(user: INewUser) {
     try {
@@ -255,7 +256,7 @@ export const savePost = async (postId: string, userId: string) => {
 
     }
 }
-
+// ==========================DELETE SAVED POST
 export const deleteSavedPost = async (savedRecordId: string) => {
     try {
         const statusCode = await databases.deleteDocument(
@@ -267,6 +268,90 @@ export const deleteSavedPost = async (savedRecordId: string) => {
         if (!statusCode) throw Error;
 
         return { status: 'ok' }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+// ========================= GELT POST BY ID
+export const getPostById = async (postId: string) => {
+    try {
+        const post = await databases.getDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.postsCollectionId,
+            postId
+        )
+
+        return post
+    } catch (error) {
+        console.log(error);
+
+    }
+}
+
+export const updatePost = async (post: IUpdatePost) => {
+    const hasFileToUpdate = post.file.length > 0;
+
+    try {
+        let image = {
+            imageUrl: post.imageUrl,
+            imageId: post.imageId,
+        }
+
+        if (hasFileToUpdate) {
+            const uploadedFile = await uploadFile(post.file[0]);
+
+            if (!uploadedFile) throw Error;
+            //Get file url 
+            const fileUrl = getFilePreview(uploadedFile.$id);
+
+            if (!fileUrl) {
+                deleteFile(uploadedFile.$id)
+                throw Error;
+            }
+
+            image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id }
+        }
+
+        // convert tags into an array
+        const tags = post.tags?.replace(/ /g, '').split(',') || [];
+
+        // save posts to database
+        const updatedPost = await databases.updateDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.postsCollectionId,
+            post.postId,
+            {
+                caption: post.caption,
+                imageUrl: image.imageUrl,
+                imageId: image.imageId,
+                location: post.location,
+                tags: tags
+            }
+        )
+
+        if (!updatedPost) {
+            await deleteFile(post.imageId)
+            throw Error;
+        }
+
+        return updatedPost;
+
+    } catch (error) {
+        console.log(error);
+
+    }
+}
+
+export const deletePost = async (postId: string, imageId: string) => {
+    if (!postId || !imageId) throw Error;
+
+    try {
+        await databases.deleteDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.postsCollectionId,
+            postId
+        )
     } catch (error) {
         console.log(error);
     }
