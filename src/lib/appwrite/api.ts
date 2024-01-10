@@ -356,3 +356,44 @@ export const deletePost = async (postId: string, imageId: string) => {
         console.log(error);
     }
 }
+
+export const getInfinitePosts = async ({ pageParam }: { pageParam: number }) => {
+    const queries: any[] = [Query.orderDesc('$updatedAt'), Query.limit(10)]
+
+    if (pageParam) {
+        queries.push(Query.cursorAfter(pageParam.toString()));
+    }
+
+    try {
+        const posts = await databases.listDocuments(
+            appwriteConfig.databaseId,
+            appwriteConfig.postsCollectionId,
+            queries
+        )
+
+        if (!posts) throw Error
+
+        return posts;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export const searchPosts = async (searchTerm: string) => {
+    try {
+        const Allposts = await databases.listDocuments(
+            appwriteConfig.databaseId,
+            appwriteConfig.postsCollectionId,
+        )
+
+        const posts = Allposts.documents.filter(post => {
+            return post.caption.includes(searchTerm)
+        })
+
+        if (!posts) throw Error
+
+        return posts;
+    } catch (error) {
+        console.log(error);
+    }
+}
